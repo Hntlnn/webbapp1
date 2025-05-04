@@ -1,39 +1,44 @@
 <?php
-        session_start();
-        $servername = "mysql_db";
-        $username = "root";
-        $password = "rootpassword";
+$loginIncorrect = false;
+session_start();
 
-        try {
-            $conn = new PDO("mysql:host=$servername;dbname=restaurant", $username, $password);
-            // Zet de PDO foutmodus op uitzondering
-        } catch(PDOException $e) {
-            echo "Verbinding mislukt: " . $e->getMessage();
-        }
+if(isset($_POST['Login'])) {
+    $servername = "mysql_db";
+    $username = "root";
+    $password = "rootpassword";
 
-        $sql = "SELECT * FROM `gebruikers` WHERE `password` = :password AND username = :username";
-        $statement = $conn->prepare($sql);
-        $statement->bindParam(':password', $_POST['password']);
-        $statement->bindParam(':username', $_POST['name']);  // Correcte parameternaam
-        $statement->execute();
-        $gebruiker = $statement->fetch();
+    try {
+        $conn = new PDO("mysql:host=$servername;dbname=restaurant", $username, $password);
+    } catch (PDOException $e) {
+        echo "Connection failed: " . $e->getMessage();
+    }
+
+// voeren query uit
+    $sql = "SELECT * FROM `gebruikers` WHERE `password` = :password AND username = :username";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':password', $_POST['password']);
+    $stmt->bindParam(':username', $_POST['username']);
+    $stmt->execute();
+    $gebruiker = $stmt->fetch();
+
+    if($gebruiker) {
+        $_SESSION['admin'] = true;
+        header("Location: admin.php");
+    } else {
+        $loginIncorrect = true;
+    }
+
+}
 
 
-        //check
-        $loginIncorrect = false;
-        if (isset($_POST['Login'])) {
 
-            if ($_POST['username'] == "admin" && $_POST['password'] == "geheim") {
-                $_SESSION['admin'] = true;
-                header("Location: admin.php");
-                exit();
-            } else {
-                $loginIncorrect = true;
-            }
-        }
-        ?>
 
-        <!DOCTYPE html>
+
+?>
+
+
+
+<!DOCTYPE html>
         <html lang="nl">
         <head>
             <meta charset="UTF-8">
